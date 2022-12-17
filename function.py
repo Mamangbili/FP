@@ -1,6 +1,5 @@
 from csv import *
 import math
-import functools as ft
 
 def isfloat(str):
     try: 

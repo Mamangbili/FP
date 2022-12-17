@@ -1,7 +1,6 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk,messagebox
 from tkinter import filedialog as fd
-import io as IO
 from function import * 
 
 class MyApp:
@@ -26,6 +25,8 @@ class MyApp:
         self.text_path.pack()
         
         self.btn = tk.Button(self.frame1,text='Analisis Kolom', command=self.on_tabel_buttom)
+        
+        self.populasi_tx = tk.Label(self.frame1)
         self.comboBox = ttk.Combobox(self.frame1,values='')
         self.table = ttk.Treeview(self.root)
 
@@ -44,9 +45,11 @@ class MyApp:
             self.table.delete(item)
         
         self.data = extract_kolom(self.file[1:], kolom) #diambil setelah header
-        
-        mean = rata_rata(self.data)
-        std = standar_deviasi(self.data, mean)
+        try:
+            mean = rata_rata(self.data)
+            std = standar_deviasi(self.data, mean)
+        except:
+            error_tx = messagebox.showerror( title='Column Error',message='Error: Kolom bukan numeric!')
 
         tabelDistribusi = kelas_dan_frequensi(
                 kelas(self.data
@@ -67,13 +70,18 @@ class MyApp:
             print(k,'dan', v)
             self.table.insert(parent='',index='end',iid=i,text='', values =(f'({k[0]}, {k[1]})',v))
         
+        self.populasi_tx.configure(text=f'Populasi : {sum(tabelDistribusi.values())}')
         self.rata2_tx.configure(text=f'Rata-rata : {mean}')
         self.std_tx.configure(text=f'Standar Deviasi: {std}')
+        self.populasi_tx.pack()
         self.table.pack()
         self.rata2_tx.grid(row=0,column=0)
         self.std_tx.grid(row=0,column=1)
  
     def on_tabel_buttom(self):
+        self.populasi_tx.configure(text='')
+        self.rata2_tx.configure(text='')
+        self.std_tx.configure(text='')
         self.comboBoxVal = self.comboBox.get()
         self.index = self.header.index(self.comboBoxVal)
         self.tx.pack()
