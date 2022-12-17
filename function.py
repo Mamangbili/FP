@@ -2,11 +2,20 @@ from csv import *
 import math
 import functools as ft
 
+def isfloat(str):
+    try: 
+        float(str)
+        return True
+    except ValueError: return False
+
 def parse_toFloat(n: str):
     return float(n)
 
+a='21'
+a.isdecimal
 def contain_alphabet(_str: str):
-    return float(_str) if any(c.isnumeric() for c in _str) else  _str#jika angka diparse menjadi numberic
+    return float(_str) if isfloat(_str) else _str 
+    #jika angka diparse menjadi numberic
 
 def column_iterate(_list: list):
     return list(map(contain_alphabet, _list))
