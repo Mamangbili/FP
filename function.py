@@ -8,26 +8,17 @@ def isfloat(str):
         return True
     except ValueError: return False
 
-def parse_toFloat(n: str):
-    return float(n)
-
-a='21'
-a.isdecimal
-def contain_alphabet(_str: str):
+def parse_cell_to_float(_str: str):
     return float(_str) if isfloat(_str) else _str 
     #jika angka diparse menjadi numberic
 
 def column_iterate(_list: list):
-    return list(map(contain_alphabet, _list))
+    return list(map(parse_cell_to_float, _list))
 
 def load_csv(path):
     with open(path) as io:
         file = reader(io)
         return list(map(lambda x : column_iterate(x) , file))
-
-# csv_list = load_csv(csv_file)
-# data = csv_list[1:]
-
 
 def rata_rata (data: list):
     return sum(data)/len(data)
@@ -54,14 +45,3 @@ def kelas_dan_frequensi(_kelas : list, data: list[float|int]):
         for key in baris.keys():
             if key[0] <= val <= key[1]: baris[key]+=1
     return baris
-
-# kolom= extract_kolom(data, 1)
-# rata2 = rata_rata(kolom)
-# print(kolom)
-# print(kelas(kolom, rentang_kelas(kolom), banyak_kelas(kolom)))
-# print('n rentang :', rentang_kelas(kolom))
-# print('n kelas :', banyak_kelas(kolom))
-# print('rata-rata :', rata2)
-# print('std :',standar_deviasi(kolom,rata2))
-
-# print( kelas_dan_frequensi(kelas(kolom, rentang_kelas(kolom),banyak_kelas(kolom)),kolom) )
