@@ -1,57 +1,94 @@
-from csv import *
-import math
-import functools as ft
+import tkinter as tk
+from tkinter import ttk
+from tkinter import filedialog as fd
+import io as IO
+from function import * 
 
-def parse_toFloat(n: str):
-    return float(n)
+class MyApp:
+    header : list
+    data : list
+    path : str
+    def __init__(self):
 
-def contain_alphabet(_str: str):
-    return _str if any(c.isalpha() for c in _str) else parse_toFloat(_str) #jika angka diparse menjadi numberic
+        self.root = tk.Tk()
+        self.root.title("Analisis Cepat Distirbusi Frekuensi")
 
-def column_iterate(_list: list):
-    return list(map(contain_alphabet, _list))
+        self.frame1 = tk.Frame(self.root)
+        self.frame1_label = tk.LabelFrame(self.frame1, text='Pilih File')
+        self.frame1.pack(fill='both',expand=1)
 
-def load_csv(io):
-        file = reader(io)
-        return list(map(lambda x : column_iterate(x) , file))
+        self.text_pilih = tk.Label(self.frame1,text="Pilih File CSV :")
+        self.btnPilih = tk.Button(self.frame1,text="Browse",command=self.btn_Pilih)
+        self.text_path = tk.Label(self.frame1)
+        
+        self.text_pilih.pack(padx=150)
+        self.btnPilih.pack()
+        self.text_path.pack()
+        
+        self.btn = tk.Button(self.frame1,text='Analisis Kolom', command=self.on_tabel_buttom)
+        self.comboBox = ttk.Combobox(self.frame1,values='')
+        self.table = ttk.Treeview(self.root)
 
-# csv_list = load_csv(csv_file)
-# data = csv_list[1:]
+        self.frame2 = tk.Frame(self.root)
+        self.frame2.pack()
+        self.rata2_tx = tk.Label(self.frame2)
+        self.std_tx = tk.Label(self.frame2)
 
+        self.comboBoxVal = ''
+        self.tx = tk.Label(self.frame1, text='Kolom dipilih:')
+        self.root.mainloop()
+    
+    def new_table(self,kolom: int):
 
-def rata_rata (data: list):
-    return sum(data)/len(data)
+        for item in self.table.get_children():
+            self.table.delete(item)
+        
+        self.data = extract_kolom(self.file[1:], kolom) #diambil setelah header
+        
+        mean = rata_rata(self.data)
+        std = standar_deviasi(self.data, mean)
 
-def standar_deviasi(_list,mean):
-    return math.sqrt(sum(map(lambda x:math.pow(x-mean,2), _list ))/ len(_list) )
+        tabelDistribusi = kelas_dan_frequensi(
+                kelas(self.data
+                    ,rentang_kelas(self.data)
+                    ,banyak_kelas(self.data)),
+                self.data)
 
-def extract_kolom(_table: list, kolom: int):
-    return list(map(lambda x: x[kolom], _table))
+        self.table['columns'] = ('Kelas','Frekuensi')
+        self.table.column('#0',stretch=tk.NO, width=0)
+        self.table.column('Kelas',anchor=tk.CENTER, width=300)
+        self.table.column('Frekuensi',anchor=tk.CENTER, width=100)
 
-def rentang_kelas(_data: list[float|int]):
-    return (max(_data)-min(_data)) / banyak_kelas(_data)
+        self.table.heading('#0', text='',anchor=tk.CENTER)
+        self.table.heading('Kelas', text='Kelas',anchor=tk.CENTER)
+        self.table.heading('Frekuensi', text='Frekuensi',anchor=tk.CENTER)
+        
+        for i,(k,v) in enumerate(tabelDistribusi.items()):
+            print(k,'dan', v)
+            self.table.insert(parent='',index='end',iid=i,text='', values =(f'({k[0]}, {k[1]})',v))
+        
+        self.rata2_tx.configure(text=f'Rata-rata : {mean}')
+        self.std_tx.configure(text=f'Standar Deviasi: {std}')
+        self.table.pack()
+        self.rata2_tx.grid(row=0,column=0)
+        self.std_tx.grid(row=0,column=1)
+ 
+    def on_tabel_buttom(self):
+        self.comboBoxVal = self.comboBox.get()
+        self.index = self.header.index(self.comboBoxVal)
+        self.tx.pack()
+        self.new_table(self.index)
 
-def banyak_kelas(_data: list[float|int]):
-    return round(1+ (3.322*math.log10(len(_data))))
+    def btn_Pilih(self):
+        filedialog = fd.askopenfilename(filetypes=(('CSV Files','.csv',),))
+        self.file = load_csv(filedialog)
+        self.header :list = self.file[0]
+        self.tx.pack()
+        self.comboBox.configure(values=self.header)
+        self.comboBox.pack()
+             
+        self.btn.pack()
+        
 
-def kelas(data: list[float|int], rentang: float, banyak_kelas: int)->list[float|int]:
-    batas_bawah = min(data)
-    return list(map(lambda x: (batas_bawah+(x*rentang),batas_bawah+((x+1)*rentang)) if x == 0 else(batas_bawah+0.00001+(x*rentang),batas_bawah+((x+1)*rentang)), range(banyak_kelas)))
-
-def kelas_dan_frequensi(_kelas : list, data: list[float|int]):
-    baris = {key:0 for key in _kelas }
-    for val in data:
-        for key in baris.keys():
-            if key[0] <= val <= key[1]: baris[key]+=1
-    return baris
-
-# kolom= extract_kolom(data, 1)
-# rata2 = rata_rata(kolom)
-# print(kolom)
-# print(kelas(kolom, rentang_kelas(kolom), banyak_kelas(kolom)))
-# print('n rentang :', rentang_kelas(kolom))
-# print('n kelas :', banyak_kelas(kolom))
-# print('rata-rata :', rata2)
-# print('std :',standar_deviasi(kolom,rata2))
-
-# print( kelas_dan_frequensi(kelas(kolom, rentang_kelas(kolom),banyak_kelas(kolom)),kolom) )
+if __name__ == '__main__':
+    MyApp()
